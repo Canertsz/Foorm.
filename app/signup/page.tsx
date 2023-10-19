@@ -5,10 +5,10 @@ import Link from "next/link"
 import { FieldValues, useForm } from "react-hook-form"
 import { useState } from "react"
 import { Oval } from "react-loader-spinner"
+import { useRouter } from "next/navigation"
 
-//  TODO create api, implement NextAuth.js and save users to the MongoDB
-//  TODO create a middleware, set login page as default
-
+// TODO create api, implement NextAuth.js and save users to the MongoDB
+// TODO create a middleware, set login page as default
 // TODO add Form. text decoration to the background
 
 export interface SignupProps {}
@@ -17,6 +17,8 @@ function SignupForm(props: SignupProps): JSX.Element {
   const [error, setError] = useState<string[]>([])
   const [isRegistered, setIsregistered] = useState<boolean | null>(null)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+
+  const router = useRouter()
 
   const {
     register,
@@ -54,18 +56,16 @@ function SignupForm(props: SignupProps): JSX.Element {
       })
 
       if (res.ok) {
-        console.log("User registration successful")
         setIsSubmitting(false)
         setError([])
         setIsregistered(true)
         reset()
+        router.push("/login")
       } else {
-        console.log("User registration failed")
         setIsSubmitting(false)
         setIsregistered(false)
       }
     } catch (error) {
-      console.log("error while fething data: ", error)
       setIsSubmitting(false)
       setIsregistered(false)
     }
