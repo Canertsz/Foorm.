@@ -3,13 +3,21 @@
 import * as React from "react"
 import Link from "next/link"
 import { FieldValues, useForm } from "react-hook-form"
+import { useState } from "react"
+import { Oval } from "react-loader-spinner"
 
 //  TODO create api, implement NextAuth.js and save users to the MongoDB
 //  TODO create a middleware, set login page as default
 
+// TODO add Form. text decoration to the background
+
 export interface SignupProps {}
 
 function SignupForm(props: SignupProps): JSX.Element {
+  const [error, setError] = useState<string[]>([])
+  const [isRegistered, setIsregistered] = useState<boolean | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+
   const {
     register,
     formState: { errors },
@@ -18,9 +26,25 @@ function SignupForm(props: SignupProps): JSX.Element {
     getValues,
   } = useForm()
 
-  // TODO Inform useron UI when error occurs
   const onSubmit = async (data: FieldValues) => {
     try {
+      setIsSubmitting(true)
+      const resUserExists = await fetch("api/userExists", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      const { user } = await resUserExists.json()
+
+      if (user) {
+        setError([...error, "User already exist"])
+        setIsSubmitting(false)
+        return
+      }
+
       const res = await fetch("api/signup", {
         method: "POST",
         headers: {
@@ -31,12 +55,19 @@ function SignupForm(props: SignupProps): JSX.Element {
 
       if (res.ok) {
         console.log("User registration successful")
+        setIsSubmitting(false)
+        setError([])
+        setIsregistered(true)
         reset()
       } else {
         console.log("User registration failed")
+        setIsSubmitting(false)
+        setIsregistered(false)
       }
     } catch (error) {
       console.log("error while fething data: ", error)
+      setIsSubmitting(false)
+      setIsregistered(false)
     }
   }
 
@@ -55,7 +86,7 @@ function SignupForm(props: SignupProps): JSX.Element {
         placeholder="name"
       />
       {errors.name && (
-        <p className="bg-[#FF0000] antialiased font-bold w-72 text-center py-1 rounded">{`${errors.name.message}`}</p>
+        <p className="bg-[#FF0000] antialiased font-medium w-72 text-center py-1 rounded">{`${errors.name.message}`}</p>
       )}
       <input
         {...register("email", {
@@ -66,7 +97,7 @@ function SignupForm(props: SignupProps): JSX.Element {
         placeholder="e-mail"
       />
       {errors.email && (
-        <p className="bg-[#FF0000] antialiased font-bold w-72 text-center py-1 rounded">{`${errors.email.message}`}</p>
+        <p className="bg-[#FF0000] antialiased font-medium w-72 text-center py-1 rounded">{`${errors.email.message}`}</p>
       )}
       <input
         {...register("password", {
@@ -78,7 +109,7 @@ function SignupForm(props: SignupProps): JSX.Element {
         placeholder="password"
       />
       {errors.password && (
-        <p className="bg-[#FF0000] antialiased font-bold w-72 text-center py-1 rounded">{`${errors.password.message}`}</p>
+        <p className="bg-[#FF0000] antialiased font-medium w-72 text-center py-1 rounded">{`${errors.password.message}`}</p>
       )}
       <input
         {...register("confirmPassword", {
@@ -91,7 +122,7 @@ function SignupForm(props: SignupProps): JSX.Element {
         placeholder="confirm password"
       />
       {errors.confirmPassword && (
-        <p className="bg-[#FF0000] antialiased font-bold w-72 text-center py-1 rounded">{`${errors.confirmPassword.message}`}</p>
+        <p className="bg-[#FF0000] antialiased font-medium w-72 text-center py-1 rounded">{`${errors.confirmPassword.message}`}</p>
       )}
       <div className="flex gap-x-1 mt-2">
         <span className="text-zinc-500">Already have an account?</span>
@@ -99,9 +130,43 @@ function SignupForm(props: SignupProps): JSX.Element {
           Log in here
         </Link>
       </div>
-      <button type="submit" className="bg-[#0883cf] w-72 rounded py-1 mt-3">
-        sign up
+      <button
+        disabled={isSubmitting}
+        type="submit"
+        className="bg-[#0883cf] flex w-72 rounded py-2 mt-3 justify-center items-center disabled:bg-zinc-800"
+      >
+        {isSubmitting === true ? (
+          <Oval
+            height={24}
+            width={24}
+            color="#8b8b8b"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+            ariaLabel="oval-loading"
+            secondaryColor="#838383"
+            strokeWidth={2}
+            strokeWidthSecondary={2}
+          />
+        ) : (
+          "Sign up"
+        )}
       </button>
+      {error &&
+        error.map((item) => (
+          <div className="bg-[#FF0000] text-white w-72 text-center py-1 px-3 rounded-md mt-2">
+            {item}
+          </div>
+        ))}
+      {isRegistered ? (
+        <div className="bg-[#4ef648] antialiased font-medium w-72 text-center text-black py-1 rounded">
+          Successfully registered
+        </div>
+      ) : isRegistered === false ? (
+        <div className="bg-[#FF0000] antialiased font-medium w-72 text-center py-1 rounded">
+          Registration failed
+        </div>
+      ) : null}
     </form>
   )
 }
