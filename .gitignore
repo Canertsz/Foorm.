@@ -1,9 +1,18 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Prettierrc.json
+.prettierrc.json
+
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+
+# Visual Studio Code
+.vscode
+
+# JetBrains IDE
+.idea
 
 # testing
 /coverage
