@@ -18,8 +18,26 @@ function SignupForm(props: SignupProps): JSX.Element {
     getValues,
   } = useForm()
 
+  // TODO Inform useron UI when error occurs
   const onSubmit = async (data: FieldValues) => {
-    reset()
+    try {
+      const res = await fetch("api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (res.ok) {
+        console.log("User registration successful")
+        reset()
+      } else {
+        console.log("User registration failed")
+      }
+    } catch (error) {
+      console.log("error while fething data: ", error)
+    }
   }
 
   return (
