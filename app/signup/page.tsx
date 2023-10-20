@@ -6,19 +6,23 @@ import { FieldValues, useForm } from "react-hook-form"
 import { useState } from "react"
 import { Oval } from "react-loader-spinner"
 import { useRouter } from "next/navigation"
-
-// TODO create api, implement NextAuth.js and save users to the MongoDB
-// TODO create a middleware, set login page as default
-// TODO add Form. text decoration to the background
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import authOptions from "../api/auth/[...nextauth]/route"
 
 export interface SignupProps {}
 
-function SignupForm(props: SignupProps): JSX.Element {
+async function SignupForm(props: SignupProps) {
   const [error, setError] = useState<string[]>([])
   const [isRegistered, setIsregistered] = useState<boolean | null>(null)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const router = useRouter()
+
+  // @ts-ignore
+  const session = await getServerSession(authOptions)
+
+  if (session) redirect("/dashboard")
 
   const {
     register,

@@ -3,10 +3,26 @@
 import * as React from "react"
 import Link from "next/link"
 import { useForm, FieldValues } from "react-hook-form"
+import { signIn } from "next-auth/react"
+import { useState } from "react"
+import { redirect, useRouter } from "next/navigation"
+import { getServerSession } from "next-auth"
+import authOptions from "../api/auth/[...nextauth]/route"
+
+// TODO Display error when user enters invalid credentials
 
 export interface LoginProps {}
 
-function LoginForm(props: LoginProps): JSX.Element {
+async function LoginForm(props: LoginProps) {
+  const [error, setError] = useState<string[]>([])
+
+  const router = useRouter()
+
+  // @ts-ignore
+  const session = await getServerSession(authOptions)
+
+  if (session) redirect("/dashboard")
+
   const {
     register,
     handleSubmit,
@@ -15,7 +31,22 @@ function LoginForm(props: LoginProps): JSX.Element {
   } = useForm()
 
   const onSubmit = async (data: FieldValues) => {
-    reset()
+    try {
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
+
+      if (res?.error) {
+        setError([...error, "Invalid Credentials"])
+        return
+      }
+
+      router.replace("dashboard")
+    } catch (e: any) {
+      setError([...error, e])
+    }
   }
 
   return (
@@ -25,7 +56,9 @@ function LoginForm(props: LoginProps): JSX.Element {
     >
       <span className="text-3xl font-bold mb-8">FOORM.</span>
       <input
-        {...register("email")}
+        {...register("email", {
+          required: "Email is required",
+        })}
         type="text"
         className="w-72 px-3 py-[7px] rounded text-white bg-zinc-800 focus:outline-none placeholder:text-zinc-500"
         placeholder="e-mail"
@@ -34,7 +67,9 @@ function LoginForm(props: LoginProps): JSX.Element {
         <p className="bg-[#FF0000] antialiased font-bold w-72 text-center py-1 rounded">{`${errors.email.message}`}</p>
       )}
       <input
-        {...register("password")}
+        {...register("password", {
+          required: "Password is required",
+        })}
         type="password"
         className="w-72 px-3 py-[7px] rounded text-white bg-zinc-800 focus:outline-none placeholder:text-zinc-500"
         placeholder="password"
