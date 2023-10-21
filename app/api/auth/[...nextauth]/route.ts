@@ -1,5 +1,5 @@
 import { signIn } from "next-auth/react"
-import NextAuth from "next-auth"
+import NextAuth, { SessionStrategy } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { connectMongoDB } from "@/lib/mongodb"
 import User from "@/models/user"
@@ -14,33 +14,30 @@ const authOptions = {
       name: "credentials",
       credentials: {},
 
-      // @ts-ignore
-      async authorize(credentials) {
-        // @ts-ignore
-        const { email, password } = credentials
+      async authorize(
+        credentials: Record<string, string> | undefined,
+        req: any,
+      ) {
+        const { email, password } = credentials || {}
+
         try {
           await connectMongoDB()
           const user = await User.findOne({ email })
 
-          if (!user) {
-            return null
-          }
-
-          const passwordsMatch = await bcrypt.compare(password, user.password)
-
-          if (!passwordsMatch) {
-            return null
+          if (!user || !(await bcrypt.compare(password, user.password))) {
+            throw new Error("Invalid credentials")
           }
 
           return user
         } catch (error) {
-          console.log(error)
+          console.error(error)
+          throw error // Rethrow the error for higher-level error handling if needed
         }
       },
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

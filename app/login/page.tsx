@@ -18,7 +18,6 @@ async function LoginForm(props: LoginProps) {
 
   const router = useRouter()
 
-  // @ts-ignore
   const session = await getServerSession(authOptions)
 
   if (session) redirect("/dashboard")
