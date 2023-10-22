@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { redirect, useRouter } from "next/navigation"
 import { getServerSession } from "next-auth"
-import authOptions from "../api/auth/[...nextauth]/route"
+import { authOptions } from "../api/auth/[...nextauth]/route"
 
 // TODO Display error when user enters invalid credentials
 
@@ -43,6 +43,7 @@ async function LoginForm(props: LoginProps) {
       }
 
       router.replace("dashboard")
+      reset()
     } catch (e: any) {
       setError([...error, e])
     }

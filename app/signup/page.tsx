@@ -8,7 +8,7 @@ import { Oval } from "react-loader-spinner"
 import { useRouter } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import authOptions from "../api/auth/[...nextauth]/route"
+import { authOptions } from "../api/auth/[...nextauth]/route"
 
 export interface SignupProps {}
 
@@ -19,7 +19,6 @@ async function SignupForm(props: SignupProps) {
 
   const router = useRouter()
 
-  // @ts-ignore
   const session = await getServerSession(authOptions)
 
   if (session) redirect("/dashboard")
